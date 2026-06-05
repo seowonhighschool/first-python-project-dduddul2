@@ -89,7 +89,6 @@ class Login(BaseModel):
 
 class HabitInput(BaseModel):
     user_id: int
-
     sleep: int
     exercise: int
     study: int
@@ -98,6 +97,17 @@ class HabitInput(BaseModel):
 
 class MissionComplete(BaseModel):
     mission_id: int
+
+
+# =========================
+# 홈 화면
+# =========================
+
+@app.get("/")
+def home():
+    return {
+        "message": "Life Booster API 실행중"
+    }
 
 
 # =========================
@@ -220,7 +230,7 @@ def login(data: Login):
 
 
 # =========================
-# 생활 데이터 입력
+# 생활 데이터 저장
 # =========================
 
 @app.post("/habit")
@@ -270,12 +280,12 @@ def generate(user_id: int):
 
     for m in missions:
 
-        mission = Mission(
-            user_id=user_id,
-            mission=m
+        db.add(
+            Mission(
+                user_id=user_id,
+                mission=m
+            )
         )
-
-        db.add(mission)
 
     db.commit()
 
@@ -298,15 +308,15 @@ def generate(user_id: int):
 # =========================
 
 @app.get("/missions/{user_id}")
-def missions(user_id: int):
+def get_missions(user_id: int):
 
     db = SessionLocal()
 
-    data = db.query(Mission).filter(
+    missions = db.query(Mission).filter(
         Mission.user_id == user_id
     ).all()
 
-    return data
+    return missions
 
 
 # =========================
@@ -329,7 +339,7 @@ def complete(data: MissionComplete):
         )
 
     if mission.completed:
-        return {"message": "이미 완료"}
+        return {"message": "이미 완료됨"}
 
     mission.completed = True
 
@@ -357,7 +367,7 @@ def complete(data: MissionComplete):
 # =========================
 
 @app.get("/user/{user_id}")
-def user(user_id: int):
+def get_user(user_id: int):
 
     db = SessionLocal()
 
